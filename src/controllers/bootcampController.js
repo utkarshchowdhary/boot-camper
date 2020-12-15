@@ -62,8 +62,6 @@ exports.uploadImageCover = asyncHandler(async (req, res, next) => {
   bootcamp.imageCover = req.file.buffer;
   await bootcamp.save();
 
-  cache.set(bootcamp._id.toString(), bootcamp.imageCover);
-
   res.status(200).json({
     status: 'success',
   });
