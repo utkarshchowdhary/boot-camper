@@ -220,7 +220,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 });
 
 exports.updatePassword = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user._id).select('+password');
+  const user = await User.findById(req.user.id).select('+password');
 
   if (!(await user.correctPassword(req.body.passwordCurrent))) {
     return next(new CustomError('Your current password is wrong!', 401));

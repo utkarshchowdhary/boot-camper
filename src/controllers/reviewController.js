@@ -17,11 +17,11 @@ exports.createReview = asyncHandler(async (req, res, next) => {
     return next(new CustomError('No bootcamp found with that ID', 404));
   }
 
-  req.body.bootcamp = bootcampId;
-  req.body.user = req.user._id;
-
-  const reviewProps = req.body;
-  const review = await Review.create(reviewProps);
+  const review = await Review.create({
+    ...req.body,
+    bootcamp: bootcampId,
+    user: req.user.id,
+  });
 
   res.status(201).json({
     status: 'success',

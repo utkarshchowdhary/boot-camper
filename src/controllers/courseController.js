@@ -26,11 +26,11 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
-  req.body.bootcamp = bootcampId;
-  req.body.user = req.user.id;
-
-  const courseProps = req.body;
-  const course = await Course.create(courseProps);
+  const course = await Course.create({
+    ...req.body,
+    bootcamp: bootcampId,
+    user: req.user.id,
+  });
 
   res.status(201).json({
     status: 'success',

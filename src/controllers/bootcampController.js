@@ -115,12 +115,12 @@ exports.deleteImageCover = asyncHandler(async (req, res, next) => {
 });
 
 exports.createBootcamp = asyncHandler(async (req, res, next) => {
-  const publishedBootcamp = Bootcamp.findOne({ user: req.user._id });
+  const publishedBootcamp = Bootcamp.findOne({ user: req.user.id });
 
   if (publishedBootcamp && req.user.role !== 'admin')
     return next(new CustomError('You have already published a bootcamp', 400));
 
-  const bootcamp = await Bootcamp.create({ ...req.body, user: req.user._id });
+  const bootcamp = await Bootcamp.create({ ...req.body, user: req.user.id });
 
   res.status(201).json({
     status: 'success',
@@ -197,7 +197,7 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
 
   await bootcamp.remove();
 
-  cache.del(bootcamp._id.toString());
+  cache.del(bootcamp.id);
 
   res.status(204).json({
     status: 'success',
