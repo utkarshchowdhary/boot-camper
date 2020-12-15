@@ -78,6 +78,24 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+userSchema.virtual('bootcamps', {
+  ref: 'Bootcamp',
+  localField: '_id',
+  foreignField: 'user',
+});
+
+userSchema.virtual('courses', {
+  ref: 'Course',
+  localField: '_id',
+  foreignField: 'user',
+});
+
+userSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'user',
+});
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 

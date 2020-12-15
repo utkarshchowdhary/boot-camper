@@ -123,7 +123,10 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
 
 exports.getUser = asyncHandler(async (req, res, next) => {
   const userId = req.params.id;
-  const user = await User.findById(userId);
+  const user = await User.findById(userId)
+    .populate('bootcamps')
+    .populate('courses')
+    .populate('reviews');
 
   if (!user) return next(new CustomError('No user found with that ID', 404));
 
