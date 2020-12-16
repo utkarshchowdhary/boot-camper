@@ -5,21 +5,21 @@ const asyncHandler = require('../middleware/async');
 const AuxiliaryTraits = require('../utils/AuxiliaryTraits');
 
 exports.createReview = asyncHandler(async (req, res, next) => {
-  const bootcampId = req.params.bootcampId;
-  if (!bootcampId) {
+  if (!req.params.bootcampId) {
     return next(
       new CustomError('Please specify bootcampId as a parameter', 400)
     );
   }
 
-  const bootcamp = await Bootcamp.findById(bootcampId);
+  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
+
   if (!bootcamp) {
     return next(new CustomError('No bootcamp found with that ID', 404));
   }
 
   const review = await Review.create({
     ...req.body,
-    bootcamp: bootcampId,
+    bootcamp: req.params.bootcampId,
     user: req.user.id,
   });
 
@@ -49,8 +49,7 @@ exports.getAllReviews = asyncHandler(async (req, res, next) => {
 });
 
 exports.getReview = asyncHandler(async (req, res, next) => {
-  const reviewId = req.params.id;
-  const review = await Review.findById(reviewId);
+  const review = await Review.findById(req.params.id);
 
   if (!review) {
     return next(new CustomError('No review found with that ID', 404));
@@ -63,11 +62,9 @@ exports.getReview = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateReview = asyncHandler(async (req, res, next) => {
-  const reviewId = req.params.id;
-  const reviewProps = req.body;
-  const updates = Object.keys(reviewProps);
+  const updates = Object.keys(req.body);
 
-  const review = await Review.findById(reviewId);
+  const review = await Review.findById(req.params.id);
 
   if (!review) {
     return next(new CustomError('No review found with that ID', 404));
@@ -79,7 +76,7 @@ exports.updateReview = asyncHandler(async (req, res, next) => {
     );
   }
 
-  updates.forEach((update) => (review[update] = reviewProps[update]));
+  updates.forEach((update) => (review[update] = req.body[update]));
 
   await review.save();
 
@@ -90,8 +87,7 @@ exports.updateReview = asyncHandler(async (req, res, next) => {
 });
 
 exports.deleteReview = asyncHandler(async (req, res, next) => {
-  const reviewId = req.params.id;
-  const review = await Review.findById(reviewId);
+  const review = await Review.findById(req.params.id);
 
   if (!review) {
     return next(new CustomError('No review found with that ID', 404));

@@ -51,13 +51,14 @@ exports.uploadImageCover = asyncHandler(async (req, res, next) => {
     return next(new CustomError('No bootcamp found with that ID', 404));
   }
 
-  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin')
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new CustomError(
         'You are not authorized to upload coverImage for this bootcamp',
         401
       )
     );
+  }
 
   bootcamp.imageCover = req.file.buffer;
   await bootcamp.save();
@@ -80,7 +81,7 @@ exports.getImageCover = asyncHandler(async (req, res, next) => {
 
   if (!bootcamp || !bootcamp.imageCover) {
     return next(
-      new CustomError('No bootcamp/coverImage found with that ID', 404)
+      new CustomError('No bootcamp or coverImage found with that ID', 404)
     );
   }
 
@@ -92,17 +93,19 @@ exports.getImageCover = asyncHandler(async (req, res, next) => {
 
 exports.deleteImageCover = asyncHandler(async (req, res, next) => {
   const bootcamp = await Bootcamp.findById(req.params.id);
+
   if (!bootcamp) {
     return next(new CustomError('No bootcamp found with that ID', 404));
   }
 
-  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin')
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new CustomError(
         'You are not authorized to delete coverImage for this bootcamp',
         401
       )
     );
+  }
 
   bootcamp.imageCover = undefined;
   await bootcamp.save();
@@ -117,8 +120,9 @@ exports.deleteImageCover = asyncHandler(async (req, res, next) => {
 exports.createBootcamp = asyncHandler(async (req, res, next) => {
   const publishedBootcamp = Bootcamp.findOne({ user: req.user.id });
 
-  if (publishedBootcamp && req.user.role !== 'admin')
+  if (publishedBootcamp && req.user.role !== 'admin') {
     return next(new CustomError('You have already published a bootcamp', 400));
+  }
 
   const bootcamp = await Bootcamp.create({ ...req.body, user: req.user.id });
 
@@ -145,13 +149,13 @@ exports.getAllBootcamps = asyncHandler(async (req, res, next) => {
 });
 
 exports.getBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcampId = req.params.id;
-  const bootcamp = await Bootcamp.findById(bootcampId)
+  const bootcamp = await Bootcamp.findById(req.params.id)
     .populate('courses')
     .populate('reviews');
 
-  if (!bootcamp)
+  if (!bootcamp) {
     return next(new CustomError('No bootcamp found with that ID', 404));
+  }
 
   res.status(200).json({
     status: 'success',
@@ -160,18 +164,19 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcampId = req.params.id;
   const updates = Object.keys(req.body);
 
-  const bootcamp = await Bootcamp.findById(bootcampId);
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
-  if (!bootcamp)
+  if (!bootcamp) {
     return next(new CustomError('No bootcamp found with that ID', 404));
+  }
 
-  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin')
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new CustomError('You are not authorized to update this bootcamp', 401)
     );
+  }
 
   updates.forEach((update) => (bootcamp[update] = req.body[update]));
 
@@ -184,16 +189,17 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 });
 
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcampId = req.params.id;
-  const bootcamp = await Bootcamp.findById(bootcampId);
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
-  if (!bootcamp)
+  if (!bootcamp) {
     return next(new CustomError('No bootcamp found with that ID', 404));
+  }
 
-  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin')
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new CustomError('You are not authorized to delete this bootcamp', 401)
     );
+  }
 
   await bootcamp.remove();
 

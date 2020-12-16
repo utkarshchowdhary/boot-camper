@@ -5,14 +5,14 @@ const asyncHandler = require('../middleware/async');
 const AuxiliaryTraits = require('../utils/AuxiliaryTraits');
 
 exports.createCourse = asyncHandler(async (req, res, next) => {
-  const bootcampId = req.params.bootcampId;
-  if (!bootcampId) {
+  if (!req.params.bootcampId) {
     return next(
       new CustomError('Please specify bootcampId as a parameter', 400)
     );
   }
 
-  const bootcamp = await Bootcamp.findById(bootcampId);
+  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
+
   if (!bootcamp) {
     return next(new CustomError('No bootcamp found with that ID', 404));
   }
@@ -28,7 +28,7 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
 
   const course = await Course.create({
     ...req.body,
-    bootcamp: bootcampId,
+    bootcamp: req.params.bootcampId,
     user: req.user.id,
   });
 
@@ -39,9 +39,8 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
 });
 
 exports.getAllCourses = asyncHandler(async (req, res, next) => {
-  const bootcampId = req.params.bootcampId;
   let filter = {};
-  if (bootcampId) filter = { bootcamp: bootcampId };
+  if (req.params.bootcampId) filter = { bootcamp: req.params.bootcampId };
 
   const features = new AuxiliaryTraits(Course.find(filter), req.query)
     .filter()
@@ -59,8 +58,7 @@ exports.getAllCourses = asyncHandler(async (req, res, next) => {
 });
 
 exports.getCourse = asyncHandler(async (req, res, next) => {
-  const courseId = req.params.id;
-  const course = await Course.findById(courseId);
+  const course = await Course.findById(req.params.id);
 
   if (!course) {
     return next(new CustomError('No course found with that ID', 404));
@@ -73,11 +71,9 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateCourse = asyncHandler(async (req, res, next) => {
-  const courseId = req.params.id;
-  const courseProps = req.body;
-  const updates = Object.keys(courseProps);
+  const updates = Object.keys(req.body);
 
-  const course = await Course.findById(courseId);
+  const course = await Course.findById(req.params.id);
 
   if (!course) {
     return next(new CustomError('No course found with that ID', 404));
@@ -89,7 +85,7 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
-  updates.forEach((update) => (course[update] = courseProps[update]));
+  updates.forEach((update) => (course[update] = req.body[update]));
 
   await course.save();
 
@@ -100,8 +96,7 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
 });
 
 exports.deleteCourse = asyncHandler(async (req, res, next) => {
-  const courseId = req.params.id;
-  const course = await Course.findById(courseId);
+  const course = await Course.findById(req.params.id);
 
   if (!course) {
     return next(new CustomError('No course found with that ID', 404));

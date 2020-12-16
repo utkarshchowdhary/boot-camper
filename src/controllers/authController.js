@@ -14,6 +14,7 @@ const signToken = (id) => {
 
 const createSendToken = async (user, statusCode, req, res) => {
   const token = signToken(user.id);
+
   user.tokens = [...user.tokens, { token }];
 
   await user.save();
@@ -50,9 +51,9 @@ exports.signup = asyncHandler(async (req, res, next) => {
     );
   }
 
-  const newUser = await User.create(req.body);
+  const user = await User.create(req.body);
 
-  createSendToken(newUser, 201, req, res);
+  createSendToken(user, 201, req, res);
 });
 
 exports.login = asyncHandler(async (req, res, next) => {
@@ -91,10 +92,10 @@ exports.protect = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Verification token
+  //* Verification token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-  // Check if user still exists
+  //* Check if user still exists
   const currentUser = await User.findOne({
     _id: decoded.id,
     'tokens.token': token,
@@ -109,7 +110,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Check if user changed password after token was issued
+  //* Check if user changed password after token was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
       new CustomError(

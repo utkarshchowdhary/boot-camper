@@ -38,10 +38,10 @@ exports.uploadAvatar = asyncHandler(async (req, res, next) => {
   if (!req.file) {
     return next(new CustomError('Please select an image to upload', 400));
   }
-  const userId = req.params.id;
-  if (userId) {
+
+  if (req.params.id) {
     const user = await User.findByIdAndUpdate(
-      userId,
+      req.params.id,
       { avatar: req.file.buffer },
       {
         new: true,
@@ -61,11 +61,10 @@ exports.uploadAvatar = asyncHandler(async (req, res, next) => {
 });
 
 exports.getAvatar = asyncHandler(async (req, res, next) => {
-  const userId = req.params.id;
-  if (userId) {
-    const user = await User.findById(userId);
+  if (req.params.id) {
+    const user = await User.findById(req.params.id);
     if (!user || !user.avatar) {
-      return next(new CustomError('No user/avatar found with that ID', 404));
+      return next(new CustomError('No user or avatar found with that ID', 404));
     }
     res.set('Content-Type', 'image/png');
     res.send(user.avatar);
@@ -96,8 +95,7 @@ exports.deleteAvatar = asyncHandler(async (req, res, next) => {
 });
 
 exports.createUser = asyncHandler(async (req, res, next) => {
-  const userProps = req.body;
-  const user = await User.create(userProps);
+  const user = await User.create(req.body);
 
   res.status(201).json({
     status: 'success',
@@ -122,8 +120,7 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUser = asyncHandler(async (req, res, next) => {
-  const userId = req.params.id;
-  const user = await User.findById(userId)
+  const user = await User.findById(req.params.id)
     .populate('bootcamps')
     .populate('courses')
     .populate('reviews');
@@ -137,15 +134,13 @@ exports.getUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateUser = asyncHandler(async (req, res, next) => {
-  const userId = req.params.id;
-  const userProps = req.body;
-  const updates = Object.keys(userProps);
+  const updates = Object.keys(req.body);
 
-  const user = await User.findById(userId);
+  const user = await User.findById(req.params.id);
 
   if (!user) return next(new CustomError('No user found with that ID', 404));
 
-  updates.forEach((update) => (user[update] = userProps[update]));
+  updates.forEach((update) => (user[update] = req.body[update]));
 
   await user.save();
 
@@ -156,8 +151,7 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.deleteUser = asyncHandler(async (req, res, next) => {
-  const userId = req.params.id;
-  const user = await User.findById(userId);
+  const user = await User.findById(req.params.id);
 
   if (!user) return next(new CustomError('No user found with that ID', 404));
 
@@ -177,8 +171,7 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateMe = asyncHandler(async (req, res, next) => {
-  const userProps = req.body;
-  const updates = Object.keys(userProps);
+  const updates = Object.keys(req.body);
   const allowedUpdates = ['name', 'email'];
 
   const isValidOperation = updates.every((update) =>
@@ -187,7 +180,7 @@ exports.updateMe = asyncHandler(async (req, res, next) => {
 
   if (!isValidOperation) return next(new CustomError('Invalid updates!', 400));
 
-  updates.forEach((update) => (req.user[update] = userProps[update]));
+  updates.forEach((update) => (req.user[update] = req.body[update]));
 
   await req.user.save();
 
@@ -201,6 +194,7 @@ exports.deleteMe = asyncHandler(async (req, res, next) => {
   await req.user.remove();
 
   const message = `Goodbye, ${req.user.name}. I hope to see you back sometime soon.`;
+
   await sendEmail({
     email: req.user.email,
     subject: 'Sorry to see you go!',
