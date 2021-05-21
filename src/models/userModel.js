@@ -34,8 +34,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ['user', 'publisher'],
-        message: 'Role is either: user or publisher'
+        values: ['user', 'publisher', 'admin'],
+        message: 'Role is either: user, publisher or admin'
       },
       default: 'user'
     },

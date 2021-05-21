@@ -17,7 +17,7 @@ const createSendToken = async (user, statusCode, req, res) => {
 
   user.tokens.push({ token })
 
-  await user.save()
+  await user.save({ validateBeforeSave: false })
 
   const message = `Welcome to the app, ${user.name}. Let me know how you get along with the it.`
 
@@ -47,7 +47,7 @@ const createSendToken = async (user, statusCode, req, res) => {
 exports.signup = asyncHandler(async (req, res, next) => {
   const user = await User.create(req.body)
 
-  createSendToken(user, 201, req, res)
+  await createSendToken(user, 201, req, res)
 })
 
 exports.login = asyncHandler(async (req, res, next) => {
@@ -63,7 +63,7 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new AppError('Incorrect email or password', 401))
   }
 
-  createSendToken(user, 200, req, res)
+  await createSendToken(user, 200, req, res)
 })
 
 exports.protect = asyncHandler(async (req, res, next) => {
@@ -116,14 +116,14 @@ const clearCookie = (res) => {
 exports.logout = asyncHandler(async (req, res, next) => {
   req.user.tokens = req.user.tokens.filter((token) => token.token !== req.token)
 
-  await req.user.save()
+  await req.user.save({ validateBeforeSave: false })
   clearCookie(res)
 })
 
 exports.logoutAll = asyncHandler(async (req, res, next) => {
   req.user.tokens = []
 
-  await req.user.save()
+  await req.user.save({ validateBeforeSave: false })
   clearCookie(res)
 })
 
