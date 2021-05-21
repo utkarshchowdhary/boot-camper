@@ -140,7 +140,9 @@ exports.restrictTo =
   }
 
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email })
+  const { email } = req.body
+
+  const user = await User.findOne({ email })
 
   if (!user) {
     return next(new AppError('There is no user with that email address', 404))
@@ -176,6 +178,8 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 })
 
 exports.resetPassword = asyncHandler(async (req, res, next) => {
+  const { password } = req.body
+
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.token)
@@ -190,7 +194,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
     return next(new AppError('Token is invalid or has expired', 400))
   }
 
-  user.password = req.body.password
+  user.password = password
   user.passwordResetToken = undefined
   user.passwordResetExpires = undefined
   await user.save()
@@ -199,13 +203,15 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 })
 
 exports.updatePassword = asyncHandler(async (req, res, next) => {
+  const { password, currentPassword } = req.body
+
   const user = await User.findById(req.user.id).select('+password')
 
-  if (!(await user.correctPassword(req.body.passwordCurrent))) {
+  if (!(await user.correctPassword(currentPassword))) {
     return next(new AppError('Your current password is wrong!', 401))
   }
 
-  user.password = req.body.password
+  user.password = password
   await user.save()
 
   createSendToken(user, 200, req, res)
