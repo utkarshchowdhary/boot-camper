@@ -1,8 +1,8 @@
-const express = require('express');
-const courseController = require('../controllers/courseController');
-const authController = require('../controllers/authController');
+const express = require('express')
+const courseController = require('../controllers/courseController')
+const authController = require('../controllers/authController')
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router({ mergeParams: true })
 
 router
   .route('/')
@@ -11,7 +11,7 @@ router
     authController.protect,
     authController.restrictTo('publisher', 'admin'),
     courseController.createCourse
-  );
+  )
 
 router
   .route('/:id')
@@ -25,6 +25,6 @@ router
     authController.protect,
     authController.restrictTo('publisher', 'admin'),
     courseController.deleteCourse
-  );
+  )
 
-module.exports = router;
+module.exports = router

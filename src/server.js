@@ -1,20 +1,19 @@
-require('dotenv').config({ path: './config.env' });
+require('dotenv').config()
 
 process.on('uncaughtException', (err) => {
-  console.log(err.name);
-  console.log(err.message);
-  process.exit(1);
-});
+  console.log(err.name)
+  console.log(err.message)
+  process.exit(1)
+})
 
-const app = require('./app');
+const app = require('./app')
 
-const port = process.env.PORT;
-const server = app.listen(port, () => {
-  console.log(`Server running on port ${port}..`);
-});
+const server = app.listen(app.get('port'), () => {
+  console.log(`Server running on port ${app.get('port')}...`)
+})
 
 process.on('unhandledRejection', (err) => {
-  console.log(err.name);
-  console.log(err.message);
-  server.close(() => process.exit(1));
-});
+  console.log(err.name)
+  console.log(err.message)
+  server.close(() => process.exit(1))
+})

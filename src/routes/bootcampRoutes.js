@@ -1,17 +1,17 @@
-const express = require('express');
-const bootcampController = require('../controllers/bootcampController');
-const authController = require('../controllers/authController');
-const courseRouter = require('./courseRoutes');
-const reviewRouter = require('./reviewRoutes');
+const express = require('express')
+const bootcampController = require('../controllers/bootcampController')
+const authController = require('../controllers/authController')
+const courseRouter = require('./courseRoutes')
+const reviewRouter = require('./reviewRoutes')
 
-const router = express.Router();
+const router = express.Router()
 
-router.use('/:bootcampId/courses', courseRouter);
-router.use('/:bootcampId/reviews', reviewRouter);
+router.use('/:bootcampId/courses', courseRouter)
+router.use('/:bootcampId/reviews', reviewRouter)
 
 router
   .route('/radius/:zipcode/:distance/:unit')
-  .get(bootcampController.getBootcampsWithin);
+  .get(bootcampController.getBootcampsWithin)
 
 router
   .route('/')
@@ -20,7 +20,7 @@ router
     authController.protect,
     authController.restrictTo('publisher', 'admin'),
     bootcampController.createBootcamp
-  );
+  )
 
 router
   .route('/:id')
@@ -34,7 +34,7 @@ router
     authController.protect,
     authController.restrictTo('publisher', 'admin'),
     bootcampController.deleteBootcamp
-  );
+  )
 
 router
   .route('/coverimage/:id')
@@ -50,6 +50,6 @@ router
     authController.protect,
     authController.restrictTo('publisher', 'admin'),
     bootcampController.deleteImageCover
-  );
+  )
 
-module.exports = router;
+module.exports = router

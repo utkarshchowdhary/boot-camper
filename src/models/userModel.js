@@ -1,14 +1,14 @@
-const crypto = require('crypto');
-const mongoose = require('mongoose');
-const validator = require('validator');
-const bcrypt = require('bcryptjs');
+const crypto = require('crypto')
+const mongoose = require('mongoose')
+const validator = require('validator')
+const bcrypt = require('bcryptjs')
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       trim: true,
-      required: [true, 'Please provide your name!'],
+      required: [true, 'Please provide your name!']
     },
     email: {
       type: String,
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      validate: [validator.isEmail, 'Please provide a valid email'],
+      validate: [validator.isEmail, 'Please provide a valid email']
     },
     password: {
       type: String,
@@ -25,33 +25,31 @@ const userSchema = new mongoose.Schema(
       select: false,
       validate: {
         validator: function (val) {
-          return !val.toLowerCase().includes('password');
+          return !val.toLowerCase().includes('password')
         },
-        message: 'Password cannot contain "password"!',
-      },
+        message: 'Password cannot contain "password"!'
+      }
     },
-    avatar: {
-      type: Buffer,
-    },
+    avatar: Buffer,
     role: {
       type: String,
       enum: {
         values: ['user', 'publisher', 'admin'],
-        message: 'Role is either: user, publisher or admin',
+        message: 'Role is either: user, publisher or admin'
       },
-      default: 'user',
+      default: 'user'
     },
-    passwordChangedAt: { type: Date },
+    passwordChangedAt: Date,
     tokens: [
       {
         token: {
           type: String,
-          required: true,
-        },
-      },
+          required: true
+        }
+      }
     ],
     passwordResetToken: String,
-    passwordResetExpires: Date,
+    passwordResetExpires: Date
   },
   {
     timestamps: true,
@@ -59,92 +57,88 @@ const userSchema = new mongoose.Schema(
       virtuals: true,
       versionKey: false,
       transform: (doc, ret) => {
-        delete ret._id;
-        delete ret.password;
-        delete ret.tokens;
-        delete ret.avatar;
-      },
+        delete ret._id
+        delete ret.password
+        delete ret.tokens
+        delete ret.avatar
+      }
     },
     toObject: {
       virtuals: true,
       versionKey: false,
       transform: (doc, ret) => {
-        delete ret._id;
-        delete ret.password;
-        delete ret.tokens;
-        delete ret.avatar;
-      },
-    },
+        delete ret._id
+        delete ret.password
+        delete ret.tokens
+        delete ret.avatar
+      }
+    }
   }
-);
+)
 
 userSchema.virtual('bootcamps', {
   ref: 'Bootcamp',
   localField: '_id',
-  foreignField: 'user',
-});
+  foreignField: 'user'
+})
 
 userSchema.virtual('courses', {
   ref: 'Course',
   localField: '_id',
-  foreignField: 'user',
-});
+  foreignField: 'user'
+})
 
 userSchema.virtual('reviews', {
   ref: 'Review',
   localField: '_id',
-  foreignField: 'user',
-});
+  foreignField: 'user'
+})
 
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password')) return next()
 
-  this.password = await bcrypt.hash(this.password, 12);
+  this.password = await bcrypt.hash(this.password, 12)
 
-  next();
-});
+  next()
+})
 
 userSchema.pre('save', function (next) {
-  if (!this.isModified('password') || this.isNew) return next();
+  if (!this.isModified('password') || this.isNew) return next()
 
-  this.passwordChangedAt = Date.now();
-  next();
-});
+  this.passwordChangedAt = Date.now()
+  next()
+})
 
 userSchema.methods.correctPassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
+  return await bcrypt.compare(candidatePassword, this.password)
+}
 
-userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+userSchema.methods.changedPasswordAfter = function (JWTIssuedAt) {
   if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(
-      this.passwordChangedAt.getTime() / 1000,
-      10
-    );
-
-    return JWTTimestamp < changedTimestamp;
+    return JWTIssuedAt < parseInt(this.passwordChangedAt.getTime() / 1000)
   }
-  return false;
-};
+
+  return false
+}
 
 userSchema.methods.createPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetToken = crypto.randomBytes(32).toString('hex')
 
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
-    .digest('hex');
+    .digest('hex')
 
-  this.passwordResetExpires = Date.now() + 1000 * 10 * 60;
+  this.passwordResetExpires = Date.now() + 1000 * 10 * 60
 
-  return resetToken;
-};
+  return resetToken
+}
 
 userSchema.pre('remove', async function (next) {
-  await this.model('Bootcamp').deleteMany({ user: this.id });
-  next();
-});
+  await this.model('Bootcamp').deleteMany({ user: this.id })
+  next()
+})
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema)
 
-module.exports = User;
+module.exports = User

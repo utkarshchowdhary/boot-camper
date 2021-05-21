@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const validator = require('validator');
-const slugify = require('slugify');
-const geocoder = require('../utils/geocoder');
+const mongoose = require('mongoose')
+const validator = require('validator')
+const slugify = require('slugify')
+const geocoder = require('../utils/geocoder')
 
 const bootcampSchema = new mongoose.Schema(
   {
@@ -12,34 +12,34 @@ const bootcampSchema = new mongoose.Schema(
       trim: true,
       maxlength: [
         40,
-        'A bootcamp name must have less or equal then 40 characters',
+        'A bootcamp name must have less or equal then 40 characters'
       ],
       minlength: [
         10,
-        'A bootcamp name must have more or equal then 10 characters',
-      ],
+        'A bootcamp name must have more or equal then 10 characters'
+      ]
     },
     slug: String,
     description: {
       type: String,
       required: [true, 'A bootcamp must have a description'],
-      maxlength: [500, 'Description can not be more than 500 characters'],
+      maxlength: [500, 'Description can not be more than 500 characters']
     },
     website: {
       type: String,
       lowercase: true,
-      validate: [validator.isURL, 'Please provide a valid URL'],
+      validate: [validator.isURL, 'Please provide a valid URL']
     },
     address: {
       type: String,
-      required: [true, 'A bootcamp must have an address'],
+      required: [true, 'A bootcamp must have an address']
     },
     location: {
-      //? GeoJSON Point
+      // GeoJSON Point
       type: {
         type: String,
         default: 'Point',
-        enum: ['Point'],
+        enum: ['Point']
       },
       coordinates: [Number],
       formattedAddress: String,
@@ -47,7 +47,7 @@ const bootcampSchema = new mongoose.Schema(
       city: String,
       state: String,
       zipcode: String,
-      country: String,
+      country: String
     },
     careers: {
       type: [String],
@@ -58,43 +58,41 @@ const bootcampSchema = new mongoose.Schema(
         'UI/UX',
         'Data Science',
         'Business',
-        'Other',
-      ],
+        'Other'
+      ]
     },
-    imageCover: {
-      type: Buffer,
-    },
+    imageCover: Buffer,
     averageRating: {
       type: Number,
       min: [1, 'Rating must be at least 1'],
       max: [10, 'Rating must can not be more than 10'],
-      set: (val) => Math.round(val * 10) / 10,
+      set: (val) => Math.round(val * 10) / 10
     },
     averageCost: {
       type: Number,
-      set: (val) => Math.round(val * 10) / 10,
+      set: (val) => Math.round(val * 10) / 10
     },
     housing: {
       type: Boolean,
-      default: false,
+      default: false
     },
     jobAssistance: {
       type: Boolean,
-      default: false,
+      default: false
     },
     jobGuarantee: {
       type: Boolean,
-      default: false,
+      default: false
     },
     acceptGi: {
       type: Boolean,
-      default: false,
+      default: false
     },
     user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
-      required: [true, 'A Bootcamp must belong to a User.'],
-    },
+      required: [true, 'A Bootcamp must belong to a User.']
+    }
   },
   {
     timestamps: true,
@@ -102,48 +100,48 @@ const bootcampSchema = new mongoose.Schema(
       virtuals: true,
       versionKey: false,
       transform: (doc, ret) => {
-        delete ret._id;
-        delete ret.imageCover;
-      },
+        delete ret._id
+        delete ret.imageCover
+      }
     },
     toObject: {
       virtuals: true,
       versionKey: false,
       transform: (doc, ret) => {
-        delete ret._id;
-        delete ret.imageCover;
-      },
-    },
+        delete ret._id
+        delete ret.imageCover
+      }
+    }
   }
-);
+)
 
-bootcampSchema.index({ slug: 1 });
-bootcampSchema.index({ location: '2dsphere' });
+bootcampSchema.index({ slug: 1 })
+bootcampSchema.index({ location: '2dsphere' })
 
 bootcampSchema.virtual('courses', {
   ref: 'Course',
   localField: '_id',
-  foreignField: 'bootcamp',
-});
+  foreignField: 'bootcamp'
+})
 
 bootcampSchema.virtual('reviews', {
   ref: 'Review',
   localField: '_id',
-  foreignField: 'bootcamp',
-});
+  foreignField: 'bootcamp'
+})
 
 bootcampSchema.pre('save', function (next) {
-  if (!this.isModified('name')) return next();
+  if (!this.isModified('name')) return next()
 
-  this.slug = slugify(this.name, { lower: true });
-  next();
-});
+  this.slug = slugify(this.name, { lower: true })
+  next()
+})
 
 // Geocode & create location field
 bootcampSchema.pre('save', async function (next) {
-  if (!this.isModified('address')) return next();
+  if (!this.isModified('address')) return next()
 
-  const loc = await geocoder.geocode(this.address);
+  const loc = await geocoder.geocode(this.address)
 
   this.location = {
     type: 'Point',
@@ -153,18 +151,18 @@ bootcampSchema.pre('save', async function (next) {
     city: loc[0].city,
     state: loc[0].stateCode,
     zipcode: loc[0].zipcode,
-    country: loc[0].countryCode,
-  };
+    country: loc[0].countryCode
+  }
 
-  next();
-});
+  next()
+})
 
 // Cascade delete courses when a bootcamp is deleted
 bootcampSchema.pre('remove', async function (next) {
-  await this.model('Course').deleteMany({ bootcamp: this.id });
-  next();
-});
+  await this.model('Course').deleteMany({ bootcamp: this.id })
+  next()
+})
 
-const Bootcamp = mongoose.model('Bootcamp', bootcampSchema);
+const Bootcamp = mongoose.model('Bootcamp', bootcampSchema)
 
-module.exports = Bootcamp;
+module.exports = Bootcamp

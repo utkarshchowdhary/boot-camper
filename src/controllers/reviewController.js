@@ -1,108 +1,106 @@
-const Review = require('../models/reviewModel');
-const Bootcamp = require('../models/bootcampModel');
-const CustomError = require('../utils/CustomError');
-const asyncHandler = require('../middleware/async');
-const AuxiliaryTraits = require('../utils/AuxiliaryTraits');
+const Review = require('../models/reviewModel')
+const Bootcamp = require('../models/bootcampModel')
+const AppError = require('../utils/AppError')
+const asyncHandler = require('../middleware/async')
+const Features = require('../utils/Features')
 
 exports.createReview = asyncHandler(async (req, res, next) => {
   if (!req.params.bootcampId) {
-    return next(
-      new CustomError('Please specify bootcampId as a parameter', 400)
-    );
+    return next(new AppError('Please specify bootcampId as a parameter', 400))
   }
 
-  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
+  const bootcamp = await Bootcamp.findById(req.params.bootcampId)
 
   if (!bootcamp) {
-    return next(new CustomError('No bootcamp found with that ID', 404));
+    return next(new AppError('No bootcamp found with that ID', 404))
   }
 
   const review = await Review.create({
     ...req.body,
     bootcamp: req.params.bootcampId,
-    user: req.user.id,
-  });
+    user: req.user.id
+  })
 
   res.status(201).json({
     status: 'success',
-    data: review,
-  });
-});
+    data: review
+  })
+})
 
 exports.getAllReviews = asyncHandler(async (req, res, next) => {
-  let filter = {};
-  if (req.params.bootcampId) filter = { bootcamp: req.params.bootcampId };
+  let filter = {}
+  if (req.params.bootcampId) filter = { bootcamp: req.params.bootcampId }
 
-  const features = new AuxiliaryTraits(Review.find(filter), req.query)
+  const features = new Features(Review.find(filter), req.query)
     .filter()
     .sort()
     .limitFields()
-    .paginate();
+    .paginate()
 
-  const reviews = await features.query;
+  const reviews = await features.query
 
   res.status(200).json({
     status: 'success',
     results: reviews.length,
-    data: reviews,
-  });
-});
+    data: reviews
+  })
+})
 
 exports.getReview = asyncHandler(async (req, res, next) => {
-  const review = await Review.findById(req.params.id);
+  const review = await Review.findById(req.params.id)
 
   if (!review) {
-    return next(new CustomError('No review found with that ID', 404));
+    return next(new AppError('No review found with that ID', 404))
   }
 
   res.status(200).json({
     status: 'success',
-    data: review,
-  });
-});
+    data: review
+  })
+})
 
 exports.updateReview = asyncHandler(async (req, res, next) => {
-  const updates = Object.keys(req.body);
+  const updates = Object.keys(req.body)
 
-  const review = await Review.findById(req.params.id);
+  const review = await Review.findById(req.params.id)
 
   if (!review) {
-    return next(new CustomError('No review found with that ID', 404));
+    return next(new AppError('No review found with that ID', 404))
   }
 
   if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
-      new CustomError('You are not authorized to update this review', 401)
-    );
+      new AppError('You are not authorized to update this review', 401)
+    )
   }
 
-  updates.forEach((update) => (review[update] = req.body[update]));
+  updates.forEach((update) => (review[update] = req.body[update]))
 
-  await review.save();
+  await review.save()
 
   res.status(200).json({
     status: 'success',
-    data: review,
-  });
-});
+    data: review
+  })
+})
 
 exports.deleteReview = asyncHandler(async (req, res, next) => {
-  const review = await Review.findById(req.params.id);
+  const review = await Review.findById(req.params.id)
 
   if (!review) {
-    return next(new CustomError('No review found with that ID', 404));
+    return next(new AppError('No review found with that ID', 404))
   }
 
   if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
-      new CustomError('You are not authorized to delete this review', 401)
-    );
+      new AppError('You are not authorized to delete this review', 401)
+    )
   }
 
-  await review.remove();
+  await review.remove()
 
   res.status(204).json({
     status: 'success',
-    data: null,
-  });
-});
+    data: null
+  })
+})

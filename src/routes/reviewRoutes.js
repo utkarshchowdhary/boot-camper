@@ -1,8 +1,8 @@
-const express = require('express');
-const reviewController = require('../controllers/reviewController');
-const authController = require('../controllers/authController');
+const express = require('express')
+const reviewController = require('../controllers/reviewController')
+const authController = require('../controllers/authController')
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router({ mergeParams: true })
 
 router
   .route('/')
@@ -11,7 +11,7 @@ router
     authController.protect,
     authController.restrictTo('user', 'admin'),
     reviewController.createReview
-  );
+  )
 
 router
   .route('/:id')
@@ -25,6 +25,6 @@ router
     authController.protect,
     authController.restrictTo('user', 'admin'),
     reviewController.deleteReview
-  );
+  )
 
-module.exports = router;
+module.exports = router
