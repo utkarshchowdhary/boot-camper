@@ -45,12 +45,6 @@ const createSendToken = async (user, statusCode, req, res) => {
 }
 
 exports.signup = asyncHandler(async (req, res, next) => {
-  if (req.body.role === 'admin') {
-    return next(
-      new AppError('Administrator cannot be created on this route', 400)
-    )
-  }
-
   const user = await User.create(req.body)
 
   createSendToken(user, 201, req, res)
