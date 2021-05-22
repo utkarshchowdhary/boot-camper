@@ -157,24 +157,16 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
   const message = `Hello ${user.name} \n\nYou are receiving this email because you (or someone else) has requested to change password for your account. Please make a PATCH request to: \n\n ${resetUrl}`
 
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Password Reset!',
-      message
-    })
+  await sendEmail({
+    email: user.email,
+    subject: 'Password Reset!',
+    message
+  })
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Token sent to email'
-    })
-  } catch (err) {
-    user.passwordResetToken = undefined
-    user.passwordResetExpires = undefined
-    await user.save({ validateBeforeSave: false })
-
-    return next(new AppError('There was an error sending the email', 500))
-  }
+  res.status(200).json({
+    status: 'success',
+    message: 'Token sent to email'
+  })
 })
 
 exports.resetPassword = asyncHandler(async (req, res, next) => {
@@ -199,7 +191,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   user.passwordResetExpires = undefined
   await user.save()
 
-  createSendToken(user, 200, req, res)
+  await createSendToken(user, 200, req, res)
 })
 
 exports.updatePassword = asyncHandler(async (req, res, next) => {
@@ -214,5 +206,5 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
   user.password = password
   await user.save()
 
-  createSendToken(user, 200, req, res)
+  await createSendToken(user, 200, req, res)
 })
