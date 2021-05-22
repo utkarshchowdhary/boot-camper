@@ -47,7 +47,7 @@ router
   .delete(userController.deleteUser)
 
 router
-  .route('/avatar/:id')
+  .route('/:id/avatar')
   .get(userController.getAvatar)
   .post(
     userController.initiateUpload,

@@ -5,11 +5,13 @@ const asyncHandler = require('../middleware/async')
 const Features = require('../utils/Features')
 
 exports.createReview = asyncHandler(async (req, res, next) => {
-  if (!req.params.bootcampId) {
-    return next(new AppError('Please specify bootcampId as a parameter', 400))
+  const { bootcampId } = req.params
+
+  if (!bootcampId) {
+    return next(new AppError('No bootcampId specified', 400))
   }
 
-  const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+  const bootcamp = await Bootcamp.findById(bootcampId)
 
   if (!bootcamp) {
     return next(new AppError('No bootcamp found with that ID', 404))
@@ -17,7 +19,7 @@ exports.createReview = asyncHandler(async (req, res, next) => {
 
   const review = await Review.create({
     ...req.body,
-    bootcamp: req.params.bootcampId,
+    bootcamp: bootcampId,
     user: req.user.id
   })
 
@@ -28,8 +30,10 @@ exports.createReview = asyncHandler(async (req, res, next) => {
 })
 
 exports.getAllReviews = asyncHandler(async (req, res, next) => {
+  const { bootcampId } = req.params
   let filter = {}
-  if (req.params.bootcampId) filter = { bootcamp: req.params.bootcampId }
+
+  if (bootcampId) filter = { bootcamp: bootcampId }
 
   const features = new Features(Review.find(filter), req.query)
     .filter()

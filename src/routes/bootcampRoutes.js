@@ -37,7 +37,7 @@ router
   )
 
 router
-  .route('/coverimage/:id')
+  .route('/:id/coverimage')
   .get(bootcampController.getImageCover)
   .post(
     authController.protect,
